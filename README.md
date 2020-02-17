@@ -5,7 +5,7 @@ https://nodejs.org/en/download/
 
   - clone project
 ```ssh
-git clone https://github.com/theerawutt61/faceapi-lab.git
+  git clone https://github.com/theerawutt61/faceapi-lab.git
 ```
 
 ```ssh
