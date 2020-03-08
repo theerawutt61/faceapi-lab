@@ -1,29 +1,16 @@
 const upload = document.getElementById('upload');
 const loader = document.getElementById('loader');
-var img = document.getElementById('img');
+const submitBT = document.getElementById('profileSubmit');
+const img = document.getElementById('img');
 
-var db = new PouchDB('face-recognition');
-
-var labelsFaceDescriptors = [];
-
-const minConfidence = 0.6;
-
-async function loadModels (){
-  await faceapi.nets.ssdMobilenetv1.loadFromUri('./js/models/ssd_mobilenetv1');
-  await faceapi.nets.faceLandmark68Net.loadFromUri('./js/models/face_landmark_68');
-  await faceapi.nets.faceRecognitionNet.loadFromUri('./js/models/face_recognition');  
-}
-  
-var run = async () => {
-  console.log('Model loading');
-  await loadModels();
-  console.log('Model loadded');
-}
-
-run();
 
 upload.addEventListener('change', (e) => {
   readUrlAndClassify(upload);
+});
+
+submitBT.addEventListener('click', (e) => {
+  console.log('click');
+  saveProfile();
 });
 
 const readUrlAndClassify = async (input) => {
@@ -32,29 +19,45 @@ const readUrlAndClassify = async (input) => {
     let reader = new FileReader();
     reader.onload = async (e) => {
       img.src = e.target.result;
-      const options = new faceapi.SsdMobilenetv1Options({ minConfidence })
-    
-      var detection = await faceapi.detectSingleFace(img, options)
-      .withFaceLandmarks()
-      .withFaceDescriptor()
-      
-      if (detection) {
-        
-        var doc = {
-          "_id":document.getElementById('_id'),
-          "name": document.getElementById('name'),
-          "descriptors": new Float32Array(Object.values(detection.descriptor))
-        }
-        console.log(doc);
-        db.put(doc)
-        .then(function (result) {
-          console.log(result)
-        })
-        .catch(function (err) {
-          console.log(err);
-        });
-      }
+      loader.style.display = "none";
     };
     reader.readAsDataURL(input.files[0]);
+  }
+}
+
+const saveProfile = async () => {
+  loader.style.display = "block"
+  const options = new faceapi.SsdMobilenetv1Options({ minConfidence })
+  
+  let detection = await faceapi.detectSingleFace(img, options)
+  .withFaceLandmarks()
+  .withFaceDescriptor()
+
+  if (detection) {
+
+    let doc = {
+      "_id" : document.getElementById('_id').value,
+      "title" : document.getElementById('title').value,
+      "firstName" : document.getElementById('firstName').value,
+      "lastName" : document.getElementById('lastName').value,
+      "descriptor" : new Float32Array(Object.values(detection.descriptor))
+    }
+
+    console.log(doc);
+    
+    let saveStatus = document.getElementById("saveStatus");
+    saveStatus.style.display = "block";
+    db.put(doc)
+    .then(function (result) {
+      console.log(result);
+      loader.style.display = "none";
+      saveStatus.className = "alert alert-success";
+      saveStatus.innerText = "บันทึกข้อมูลสำเร็จ";
+    })
+    .catch(function (err) {
+      console.log(err);
+      saveStatus.className = "alert alert-danger";
+      saveStatus.innerText = err.message;
+    });
   }
 }

@@ -5,28 +5,156 @@
     <script src="./js/lib/jquery.min.js"></script>
     <script src="./js/lib/bootstrap.min.js"></script>
     <script src="./js/lib/face-api.min.js"></script>
-    
+
     <script src="./js/lib/pouchdb.min.js"></script>
     <script src="./js/lib/pouchdb.find.js"></script>
-    
+
     <link rel="stylesheet" href="./css/lib/bootstrap.min.css" >
+    <link rel="stylesheet" href="./css/webcam.css" >
   </header>
-  
+
   <body>
-  
     <div class="container">
-      <div class="row">
-        <div class="col-sm">
-          <video id="webcam" autoplay muted onPlay = "onPlay()"></video>
-          <canvas id='webcamOverlay' class="overlay" style="display: none;"></canvas>
+      <ul class="nav nav-tabs" id="myTab" role="tablist">
+        <li class="nav-item">
+          <a class="nav-link active" id="home-tab" data-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="true">Home</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" id="attend-tab" data-toggle="tab" href="#attend" role="tab" aria-controls="attend" aria-selected="false">Attendance</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" id="profile-tab" data-toggle="tab" href="#profile" role="tab" aria-controls="profile" aria-selected="false">Profile</a>
+        </li>
+      </ul>
+
+      <div class="tab-content" id="myTabContent">
+      
+        <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+          <br>
+          <div class="row">
+            <div class="col">
+              <div class="form-group row">
+                <label for="webcamSource" class="col-sm-3 col-form-label">Webcam Source</label>
+                <div class="col-sm-9">
+                  <select class="form-control" id="webcamSource" name="webcamSource">
+                    <optgroup label="กรุณาเลือก webcam"></optgroup>
+                  </select>
+                </div>
+              </div>
+              <video id="webcam" autoplay muted onPlay = "onPlay()"></video>
+              <canvas id='webcamOverlay' class="overlay" style="display: none;"></canvas>
+            </div>
+            <div class="col">
+              <div class="table-responsive">
+                <table class="table-responsive"">
+                  <tbody id="tbodyFaceDetect"></tbody>
+                </table>
+              </div>
+          </div>
+          </div>
         </div>
-        <div class="col-sm">
-          One of two columns
+        
+        <div class="tab-pane fade" id="attend" role="tabpanel" aria-labelledby="attend-tab">
+          <div class="row">
+            <div class="col-12">
+              <div class="card shadow">
+                <div class="card-header">
+                  <p class="text-primary m-0 font-weight-bold">CCTV Camera 1</p>
+                </div>
+                <div class="card-body text-center shadow">
+                  <table class="table">
+                    <thead>
+                      <tr>
+                        <th>No.</th>
+                        <th>Snapshot</th>
+                        <th>Face</th>
+                        <th>Name</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Matched</th>
+                        <th>Expression</th>
+                        <th>Gender</th>
+                      </tr>
+                    </thead>
+                    <tbody id="tbodyAttendance"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
+        
+        <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+          <br>
+          <div class="row">
+            <div class="col">
+              <center>
+                <label for="upload">
+                  <img id="img" width="500" height="400">
+                  <input id="upload" name="upload" type="file" accept="image/*" style="display: none;"/>
+                </label>
+              </center>
+            </div>
+            <div class="col">
+              <div class="form-group row">
+                <label for="_id" class="col-sm-4 col-form-label">เลขประจำตัวประชาชน</label>
+                <div class="col-sm-6">
+                  <input type="text" class="form-control" id="_id" placeholder="เลขประจำตัวประชาชน">
+                </div>
+              </div>
+              <div class="form-group row">
+                <label for="firstName" class="col-sm-4 col-form-label">คำนำหน้า</label>
+                <div class="col-sm-6">
+                  <select id="title" class="custom-select">
+                    <option selected>คำนำหน้า</option>
+                    <option value="นาย">นาย</option>
+                    <option value="นาง">นาง</option>
+                    <option value="นางสาว">นางสาว</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group row">
+                <label for="firstName" class="col-sm-4 col-form-label">ชื่อ</label>
+                <div class="col-sm-6">
+                  <input type="text" class="form-control" id="firstName" placeholder="ชื่อ">
+                </div>
+              </div>
+              <div class="form-group row">
+                <label for="lastName" class="col-sm-4 col-form-label">นามสกุล</label>
+                <div class="col-sm-6">
+                  <input type="text" class="form-control" id="lastName" placeholder="นามสกุล">
+                </div>
+              </div>
+              <div class="form-group row">
+                <div id="saveStatus" role="alert" style="display: none;">
+                </div>
+              </div>
+            </div>
+            <div id="loader" style="position: absolute; top: 50%; left: 50%; display: none;">
+              <div class="spinner-border" style="width: 3rem; height: 3rem;" role="status">
+                <span class="sr-only">Loading...</span>
+              </div>
+            </div>
+          </div>
+          <br>
+          <center>
+            <button type="button" id="profileSubmit" class="btn btn-success">บันทึกข้อมูล</button>
+          </center>
+          <br>
+        </div>
+        
+        <div id="snopshotModal" class="modal">
+          <span class="close">&times;</span>
+          <img class="modal-content" id="snopshotShow">
+          <div id="snapshotCaption"></div>
+        </div>
+        
       </div>
     </div>
-    
+
+    <script src="./js/util.js"></script>
     <script src="./js/webcam.js"></script>
+    <script src="./js/upload.js"></script>
     
   </body>
 </html>
