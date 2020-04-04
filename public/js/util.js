@@ -6,8 +6,6 @@ async function loadModels (){
   await faceapi.nets.ssdMobilenetv1.loadFromUri('./js/models/ssd_mobilenetv1');
   await faceapi.nets.faceLandmark68Net.loadFromUri('./js/models/face_landmark_68');
   await faceapi.nets.faceRecognitionNet.loadFromUri('./js/models/face_recognition');
-  await faceapi.nets.faceExpressionNet.loadFromUri('./js/models/face_expression');
-  await faceapi.nets.ageGenderNet.loadFromUri('./js/models/age_gender_model');  
 }
 
 var monthNames = [
@@ -19,17 +17,17 @@ var monthNames = [
 
 const formatDate = (date) => {
   var day = date.getDate();
-  var monthIndex = date.getMonth();
+  var month = date.getMonth();
   var year = date.getFullYear();
-  return pad(day, 2) + ' ' + monthNames[monthIndex] + ' ' + year;
-};
+  return pad(day,2)+' '+monthNames[month]+' '+(year+543);
+}
 
 const formatTime = (date) => {
   var hour = date.getHours();
   var minute = date.getMinutes();
-  var seconds = date.getSeconds();
-  return pad(hour, 2) + ':' + pad(minute, 2) + ':' + pad(seconds, 2);
-};
+  var second = date.getSeconds();
+  return pad(hour,2)+':'+pad(minute,2)+':'+pad(second,2);
+}
 
 const pad = (n, width, z) => {
   z = z || '0';

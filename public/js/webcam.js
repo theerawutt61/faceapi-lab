@@ -1,9 +1,10 @@
 const webcam = document.getElementById("webcam");
 const webcamOverlay = document.getElementById("webcamOverlay");
-const webcamSource = document.getElementById('webcamSource');
+const webcamSource = document.getElementById("webcamSource");
 
-webcamSource.addEventListener('change', (event) => {
-  webcamSeletedEvent(event.target.value);
+webcamSource.addEventListener('change',(event) => {
+  //console.log('change');
+  webcamSelectedEvent(event.target.value);
 });
 
 var labelsFaceDescriptors = [];
@@ -14,10 +15,9 @@ var run = async () => {
   console.log('Model loading');
   await loadModels();
   console.log('Model loadded');
-  
+
   const facesDb = await db.allDocs({include_docs:true,attachments:true});
   facesDb.rows.forEach(async i => {
-    //console.log(i.doc);
     var obj = {};
     obj._id = i.doc._id;
     obj.name = i.doc.title + i.doc.firstName+' '+i.doc.lastName;
@@ -25,22 +25,23 @@ var run = async () => {
     console.log(obj);
     labelsFaceDescriptors.push(obj);
   })
-  
-  navigator.mediaDevices.enumerateDevices().then(function (devices) {
-    for(var i = 0; i < devices.length; i ++){
+
+  navigator.mediaDevices.enumerateDevices().then(function(devices){
+    for(var i=0; i<devices.length;i++){
       var device = devices[i];
-      var option = document.createElement('option');
-      if (device.kind === 'videoinput') {
+      var option = document.createElement("option")
+      if(device.kind == 'videoinput'){
         option.value = device.deviceId;
-        option.text = device.label || 'camera ' + (i + 1);
+        option.text = device.label || 'camera' + (i+1);
         webcamSource.add(option);
       }
-    };
-    webcamSeletedEvent(devices[0]['deviceId'])
-  });
+    }
+    webcamSelectedEvent(devices[0]['deviceId']);
+  })
+
 }
 
-const webcamSeletedEvent = (deviceId) => {
+const webcamSelectedEvent = (deviceId) => {
   if (navigator.mediaDevices.getUserMedia) {
     navigator.mediaDevices.getUserMedia({ video: {deviceId:deviceId} })
     .then(function (stream) {
@@ -55,16 +56,14 @@ const webcamSeletedEvent = (deviceId) => {
 async function onPlay() {
   if(webcam.paused || webcam.ended)
     return setTimeout(() => onPlay())
-    
+
     const options = new faceapi.SsdMobilenetv1Options({ minConfidence })
-    
+
     var detections = await faceapi.detectAllFaces(webcam, options)
     .withFaceLandmarks()
     .withFaceDescriptors()
-    .withFaceExpressions()
-    .withAgeAndGender()
+    
     if (detections) {
-      //console.log(detections)
       webcamOverlay.style.display = 'block';
       webcamOverlay.style.position = "absolute";
       webcamOverlay.style.left = webcam.offsetLeft + "px";
@@ -82,56 +81,29 @@ async function onPlay() {
           const distance = faceapi.round(
             faceapi.euclideanDistance(faceDetect.descriptor,faceDB.descriptor)
           )
-          //console.log(distance)
           if(distance <= 0.35){
             let name = faceDB.name;
-            console.log(name);
             if(labels.indexOf(name) == -1){
               labels.push(name);
-              
-              var expressionsKeys = Object.keys(faceDetect.expressions)
-              var expressionsValues = Object.values(faceDetect.expressions);
-              var expressionsValuesMax = Math.max(...expressionsValues);
-              var indexFindMax = expressionsValues.indexOf(expressionsValuesMax);
-              
               let percentScore = Math.ceil(Math.abs((distance*100)-100))+'%';
 
               webcamOverlay.width = webcam.videoWidth;
               webcamOverlay.height = webcam.videoHeight;
               webcamOverlay.getContext('2d').drawImage(webcam,0,0);
 
-              const faceCanvas = document.createElement('canvas');
-              const width = box._width;
-              const height = box._height;
-              faceCanvas.width = width;
-              faceCanvas.height = height;
-              const ctx  = faceCanvas.getContext('2d');
-              ctx.drawImage(webcamOverlay, box._x,box._y,width,height,0,0,width,height);
-
-              const drawOptions = {
-                label: name,
-                lineWidth: 3
-              }
-
-              const drawBox = new faceapi.draw.DrawBox(box, drawOptions)
-              drawBox.draw(webcamOverlay);
-
               ++countDetectFace;
-              let date = new Date();
-              let obj = new Object();
-              obj.srcImg = webcamOverlay.toDataURL('image/webp');
-              obj.faceSrcImg = faceCanvas.toDataURL('image/webp');
+              var date = new Date();
+              var obj = new Object();
               obj.name = name;
+              obj.imgSrc = webcamOverlay.toDataURL('image/webp');
               obj.date = formatDate(date);
               obj.time = formatTime(date);
-              obj.match = percentScore;
-              obj.gender = faceDetect.gender;
-              obj.expression = expressionsKeys[indexFindMax];
+              obj.score = percentScore;
               AttendanceTable(obj);
             }
-            if(labels.length >= 10){
-              labels = [];
-            }
+          }
+          if(labels.length >= 10){
+            labels = [];
           }
         })
       })
@@ -142,50 +114,21 @@ async function onPlay() {
     setTimeout(() => onPlay())
 }
 
-const modal = document.getElementById("snopshotModal");
-const modalImg = document.getElementById("snopshotShow");
-const captionText = document.getElementById("snapshotCaption");
-
-// Get the <span> element that closes the modal
-var span = document.getElementsByClassName("close")[0];
-
-// When the user clicks on <span> (x), close the modal
-span.onclick = function() {
-  modal.style.display = "none";
-}
-
 const AttendanceTable = (obj) => {
-  let tbodyFaceDetect = $("#tbodyFaceDetect");
-  let $tr1 = $("<tr>");
-  $tr1.append('<td><img class="snapshotImg" src = "'+obj.faceSrcImg+'" alt="'+obj.name+'" height="80"></td>');
-  tbodyFaceDetect.append($tr1);
-  
-  let tbodyAttendance = $("#tbodyAttendance");
-  let $tr2 = $("<tr>");
-  $tr2.append('<td>'+ countDetectFace +'</td>');
-  $tr2.append('<td><img class="snapshotImg" src = "'+obj.srcImg+'" alt="'+obj.name+'" height="120"></td>');
-  $tr2.append('<td><img class="snapshotImg" src = "'+obj.faceSrcImg+'" alt="'+obj.name+'" height="80"></td>');
-  $tr2.append('<td>'+ obj.name +'</th>');
-  $tr2.append('<td>'+ obj.date +'</th>');
-  $tr2.append('<td>'+ obj.time +'</th>');
-  $tr2.append('<td>'+ obj.match +'</th>');
-  $tr2.append('<td>'+ obj.expression +'</th>');
-  $tr2.append('<td>'+ obj.gender +'</th>')
-  tbodyAttendance.append($tr2);
-
-  const imgs = document.querySelectorAll('.snapshotImg');
-  imgs.forEach(function(img) {
-    img.onclick = function(){
-      modal.style.display = "block";
-      modalImg.src = this.src;
-      captionText.innerHTML = this.alt;
-    }
-  });
+  let tbodyAttendance = $('#tbodyAttendance');
+  let $tr = $("<tr>");
+  $tr.append('<th>'+countDetectFace+'</th>');
+  $tr.append('<th><img src='+obj.imgSrc+' height="120"></th>');
+  $tr.append('<th>'+obj.name+'</th>');
+  $tr.append('<th>'+obj.date+'</th>');
+  $tr.append('<th>'+obj.time+'</th>');
+  $tr.append('<th>'+obj.score+'</th>');
+  tbodyAttendance.append($tr);
 
   if(countDetectFace >= 10){
     tbodyAttendance.empty();
     countDetectFace = 0;
   }
-};
+}
 
 run();

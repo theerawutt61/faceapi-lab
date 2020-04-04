@@ -34,46 +34,38 @@
           <div class="row">
             <div class="col">
               <div class="form-group row">
-                <label for="webcamSource" class="col-sm-3 col-form-label">Webcam Source</label>
+                <label for="webcamSource">Webcam Source</label>
                 <div class="col-sm-9">
                   <select class="form-control" id="webcamSource" name="webcamSource">
-                    <optgroup label="กรุณาเลือก webcam"></optgroup>
+                    <optgroup label="กรุณาเลือก WebCam"></optgroup>
                   </select>
                 </div>
               </div>
               <video id="webcam" autoplay muted onPlay = "onPlay()"></video>
               <canvas id='webcamOverlay' class="overlay" style="display: none;"></canvas>
             </div>
-            <div class="col">
-              <div class="table-responsive">
-                <table class="table-responsive"">
-                  <tbody id="tbodyFaceDetect"></tbody>
-                </table>
-              </div>
-          </div>
           </div>
         </div>
-        
+
         <div class="tab-pane fade" id="attend" role="tabpanel" aria-labelledby="attend-tab">
           <div class="row">
             <div class="col-12">
               <div class="card shadow">
                 <div class="card-header">
-                  <p class="text-primary m-0 font-weight-bold">CCTV Camera 1</p>
+                  <p class="text-primary">
+                    WebCam
+                  </p>
                 </div>
-                <div class="card-body text-center shadow">
+                <div class="card-body">
                   <table class="table">
                     <thead>
                       <tr>
                         <th>No.</th>
                         <th>Snapshot</th>
-                        <th>Face</th>
                         <th>Name</th>
                         <th>Date</th>
                         <th>Time</th>
                         <th>Matched</th>
-                        <th>Expression</th>
-                        <th>Gender</th>
                       </tr>
                     </thead>
                     <tbody id="tbodyAttendance"></tbody>
@@ -83,7 +75,7 @@
             </div>
           </div>
         </div>
-        
+
         <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
           <br>
           <div class="row">
